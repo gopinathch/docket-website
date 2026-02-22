@@ -208,6 +208,14 @@
 
         var firstName = document.getElementById('firstName').value.trim();
         var lastName = document.getElementById('lastName').value.trim();
+
+        // Validate that at least one of the name fields is provided
+        if (!firstName && !lastName) {
+          messageEl.className = 'message error';
+          messageEl.textContent = 'Please enter at least a first or last name.';
+          document.getElementById('firstName').focus();
+          return;
+        }
         
         registrations.push({
           firstName: firstName,
