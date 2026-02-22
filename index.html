@@ -206,18 +206,45 @@
           return;
         }
 
+        var firstName = document.getElementById('firstName').value.trim();
+        var lastName = document.getElementById('lastName').value.trim();
+        
         registrations.push({
-          firstName: document.getElementById('firstName').value.trim(),
-          lastName: document.getElementById('lastName').value.trim(),
+          firstName: firstName,
+          lastName: lastName,
           email: email,
           registeredAt: new Date().toISOString()
         });
         localStorage.setItem('earlySignups', JSON.stringify(registrations));
 
+        // Submit to Google Form
+        submitToGoogleForm(firstName, lastName, email);
+
         form.reset();
         messageEl.className = 'message success';
         messageEl.textContent = '\u2713 You\u2019re on the list! We\u2019ll notify you at launch.';
       });
+
+      function submitToGoogleForm(firstName, lastName, email) {
+        // Google Form submission URL
+        var formId = '1FAIpQLSd6oyy8swz7cLTewl9iVNpk1yG1xSHt3cBfw6bLjwq0yVHOMQ';
+        var formUrl = 'https://docs.google.com/forms/d/e/' + formId + '/formResponse';
+        
+        // Google Form entry IDs
+        var formData = new FormData();
+        formData.append('entry.466219312', firstName);  // First Name
+        formData.append('entry.281612430', lastName);    // Last Name
+        formData.append('entry.331818840', email);        // Email
+        
+        // Submit using fetch with no-cors mode to avoid CORS issues
+        fetch(formUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: formData
+        }).catch(function() {
+          // Silently handle errors as no-cors mode doesn't provide response
+        });
+      }
     }());
   </script>
 </body>
