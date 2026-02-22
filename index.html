@@ -57,16 +57,67 @@
       line-height: 1.6;
     }
 
-    .form-container {
-      width: 100%;
+    .signup-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
     }
 
-    .form-container iframe {
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .signup-form input[type="text"],
+    .signup-form input[type="email"] {
+      flex: 1;
+      padding: 0.8rem 1.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .signup-form input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .signup-form input:focus {
+      border-color: #e94560;
+    }
+
+    .signup-form button {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      background: #e94560;
+      color: #fff;
       border: none;
       border-radius: 8px;
-      width: 100%;
-      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
     }
+
+    .signup-form button:hover {
+      background: #c73652;
+    }
+
+    .signup-form button:active {
+      transform: scale(0.98);
+    }
+
+    .message {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      min-height: 1.4em;
+    }
+
+    .message.success { color: #4ade80; }
+    .message.error   { color: #f87171; }
 
     .footer {
       margin-top: 2rem;
@@ -75,8 +126,8 @@
     }
 
     @media (max-width: 420px) {
-      .container {
-        padding: 1.5rem 1rem;
+      .input-row {
+        flex-direction: column;
       }
     }
   </style>
@@ -92,11 +143,82 @@
       Sign up for early access and be the first to know when we launch.
     </p>
 
-    <div class="form-container">
-      <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc-PLACEHOLDER/viewform?embedded=true" height="480" title="Sign up for early access">Loading…</iframe>
-    </div>
+    <form class="signup-form" id="signupForm" novalidate>
+      <div class="input-row">
+        <input type="text" id="firstName" name="firstName" placeholder="First name" autocomplete="given-name" />
+        <input type="text" id="lastName" name="lastName" placeholder="Last name" autocomplete="family-name" />
+      </div>
+      <input type="email" id="email" name="email" placeholder="Enter your email address" autocomplete="email" required />
+      <button type="submit">Notify Me</button>
+    </form>
+
+    <p class="message" id="formMessage" role="status" aria-live="polite"></p>
 
     <p class="footer">© 2026 Docket. All rights reserved.</p>
   </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById('signupForm');
+      var emailInput = document.getElementById('email');
+      var messageEl = document.getElementById('formMessage');
+
+      function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        messageEl.className = 'message';
+        messageEl.textContent = '';
+
+        var email = emailInput.value.trim();
+
+        if (!email) {
+          messageEl.className = 'message error';
+          messageEl.textContent = 'Please enter your email address.';
+          emailInput.focus();
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          messageEl.className = 'message error';
+          messageEl.textContent = 'Please enter a valid email address.';
+          emailInput.focus();
+          return;
+        }
+
+        // Store registration locally (replace with a real API call as needed)
+        var registrations = [];
+        try {
+          registrations = JSON.parse(localStorage.getItem('earlySignups') || '[]');
+          if (!Array.isArray(registrations)) registrations = [];
+        } catch (e) {
+          registrations = [];
+        }
+        var alreadyRegistered = registrations.some(function (r) {
+          return r.email.toLowerCase() === email.toLowerCase();
+        });
+
+        if (alreadyRegistered) {
+          messageEl.className = 'message error';
+          messageEl.textContent = 'This email is already registered. We\u2019ll be in touch!';
+          return;
+        }
+
+        registrations.push({
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          email: email,
+          registeredAt: new Date().toISOString()
+        });
+        localStorage.setItem('earlySignups', JSON.stringify(registrations));
+
+        form.reset();
+        messageEl.className = 'message success';
+        messageEl.textContent = '\u2713 You\u2019re on the list! We\u2019ll notify you at launch.';
+      });
+    }());
+  </script>
 </body>
 </html>
